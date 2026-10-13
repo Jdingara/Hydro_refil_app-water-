@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ocean Hydration Reminder — PWA</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#024a72">
+  <style>
+    :root{ --card-w:360px; --tank-w:230px; --tank-h:270px; }
+    html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Arial;background:linear-gradient(#5fc9f3,#024a72);color:#eaffff;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .ocean{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:0}
+    .wave{position:absolute;width:200%;height:120px;background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='100'><path fill='%23fff' d='M0 50 C 150 120 350 0 600 50 C 850 100 1050 0 1600 50 L1600 100 L0 100 Z'/></svg>") repeat-x;opacity:0.12;bottom:0;animation:waveMove 14s linear infinite}
+    .wave:nth-child(2){bottom:28px;opacity:0.08;animation:waveMove 19s linear infinite reverse}
+    @keyframes waveMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .card{position:relative;z-index:2;background:rgba(255,255,255,0.14);width:var(--card-w);border-radius:18px;padding:22px;text-align:center;backdrop-filter:blur(8px)}
+    .drop{width:72px;height:72px;margin:0 auto 8px;animation:floatDrop 3.6s ease-in-out infinite}
+    @keyframes floatDrop{0%{transform:translateY(-6px)}50%{transform:translateY(6px)}100%{transform:translateY(-6px)}}
+    h1{margin:0;font-size:20px}
+    .controls{margin-top:12px}
+    select,input{width:100%;padding:12px;border-radius:10px;border:none;font-weight:700;margin-top:10px}
+    .btn-row{display:flex;gap:10px;margin-top:12px}
+    button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
+    .start{background:linear-gradient(90deg,#0ea5b7,#70e1f5);color:#00323a}
+    .stop{background:linear-gradient(90deg,#ff6b6b,#ff4040);color:white}
+    .tank{width:var(--tank-w);height:var(--tank-h);margin:20px auto;border-radius:18px;background:rgba(255,255,255,0.08);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.08)}
+    .water{position:absolute;left:0;right:0;bottom:0;height:100%;background:linear-gradient(180deg,#4dd0e1,#00bcd4);transition:height 0.5s linear}
+    #countdown{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);font-size:20px;font-weight:800;color:white;text-shadow:0 6px 14px rgba(0,0,0,0.35)}
+    .status{margin-top:10px;text-align:left;font-size:13px;background:rgba(255,255,255,0.03);padding:10px;border-radius:10px}
+    .status div{display:flex;justify-content:space-between;margin:6px 0}
+    .small{font-size:12px;color:rgba(255,255,255,0.9);margin-top:6px}
+    #popupFallback{position:fixed;top:18px;right:18px;background:#006d8f;color:white;padding:12px 16px;border-radius:10px;display:none;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,0.4);font-weight:700}
+    .push-btn { margin-top:10px; padding:10px; border-radius:8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: #eaffff; cursor:pointer; font-weight:700 }
+  </style>
+</head>
+<body>
+
+  <div class="ocean" aria-hidden="true">
+    <div class="wave"></div>
+    <div class="wave"></div>
+  </div>
+
+  <main class="card" role="main">
+    <img class="drop" src="https://cdn-icons-png.flaticon.com/512/2928/2928896.png" alt="water droplet">
+    <h1>Hydration Reminder</h1>
+
+    <div class="controls">
+      <label style="text-align:left;display:block;font-weight:700;margin-top:10px">Choose interval</label>
+      <select id="intervalSelect" aria-label="interval">
+        <option value="30">Every 30 minutes</option>
+        <option value="60">Every 1 hour</option>
+        <option value="120">Every 2 hours</option>
+        <option value="custom">Custom (minutes)</option>
+      </select>
+
+      <input id="customMinutes" type="number" min="1" placeholder="Enter minutes (1 - 1440)" style="display:none">
+
+      <div class="btn-row">
+        <button id="startBtn" class="start">Start Reminder</button>
+        <button id="stopBtn" class="stop" disabled>Stop</button>
+      </div>
+
+      <button id="enablePushBtn" class="push-btn">Enable background notifications</button>
+    </div>
+
+    <div class="tank" aria-hidden="false">
+      <div id="water" class="water" style="height:100%"></div>
+      <div id="countdown">--:--</div>
+    </div>
+
+    <div class="status" aria-live="polite">
+      <div><span>Reminder</span><strong id="statusText">OFF</strong></div>
+      <div><span>Interval</span><strong id="intervalText">—</strong></div>
+      <div><span>Next</span><strong id="nextText">—</strong></div>
+      <div class="small">Notification icon: 🐬 (dolphin). Background notifications require the push server below.</div>
+    </div>
+  </main>
+
+  <div id="popupFallback">🐬 Time to drink water!</div>
+
+  <!-- local audio file (must exist in same folder) -->
+  <audio id="alertAudio" src="gulp-37759.mp3" preload="auto"></audio>
+
+<script>
+/* -------------------------
+   CONFIG — insert your VAPID public key here
+   (we already have keys on the server; this public key must match server)
+   Replace this string with your actual public key if different.
+------------------------- */
+const VAPID_PUBLIC_KEY = "BBa7McevfHVOa0QR9mLvBAbxkFSncK7ZpT0HSBh5ozZjvRAIU8HFGzAs5psI4xDvLUFx_Q0wm20gKXfR1NhNe50";
+
+/* ======== Elements ======== */
+const intervalSelect = document.getElementById('intervalSelect');
+const customMinutes = document.getElementById('customMinutes');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const enablePushBtn = document.getElementById('enablePushBtn');
+const statusText = document.getElementById('statusText');
+const intervalText = document.getElementById('intervalText');
+const nextText = document.getElementById('nextText');
+const waterEl = document.getElementById('water');
+const countdownEl = document.getElementById('countdown');
+const popupFallback = document.getElementById('popupFallback');
+const alertAudio = document.getElementById('alertAudio');
+
+let countdownTimer = null;
+let remainingSeconds = 0;
+let intervalMinutes = 30;
+let nextTrigger = null;
+let reminderActive = false;
+
+/* ======== Helpers ======== */
+function formatHMS(sec){
+  if (sec <= 0) return '00:00';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function showPopup(msg = 'Time to drink water!', ms = 3000){
+  popupFallback.textContent = '🐬 ' + msg;
+  popupFallback.style.display = 'block';
+  setTimeout(()=> popupFallback.style.display = 'none', ms);
+}
+
+/* ======== Play gulp 3 times ======== */
+function playGulp3Times(){
+  let playCount = 0;
+  // Ensure audio starts at 0
+  alertAudio.pause();
+  alertAudio.currentTime = 0;
+
+  // set handler
+  alertAudio.onended = function(){
+    playCount++;
+    if (playCount < 3){
+      alertAudio.currentTime = 0;
+      setTimeout(()=> alertAudio.play().catch(()=>{}), 120);
+    } else {
+      alertAudio.onended = null;
+    }
+  };
+
+  alertAudio.play().catch(err=>{
+    console.warn('Play blocked until user interacts', err);
+    showPopup('Tap the screen to enable sound');
+  });
+}
+
+/* ======== Notification UI / SW helper ======== */
+function showLocalNotification(title='Hydration Reminder', body='Take a sip of water!'){
+  const icon = 'https://cdn-icons-png.flaticon.com/512/2928/2928896.png';
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    // use service worker registration to show notification where possible
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg && reg.showNotification) {
+        reg.showNotification(title, { body, icon, badge: icon, data: { url: location.href } });
+        return;
+      }
+      if ('Notification' in window) new Notification(title, { body, icon });
+    });
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon });
+  } else {
+    showPopup(body);
+  }
+}
+
+/* ======== Core reminder trigger ======== */
+function triggerReminder(){
+  playGulp3Times();
+  showLocalNotification('🐬 Hydration Reminder', 'Take a sip of water!');
+  remainingSeconds = intervalMinutes * 60;
+  nextTrigger = Date.now() + remainingSeconds * 1000;
+  updateUI();
+}
+
+/* ======== Countdown loop ======== */
+function startCountdown(){
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(()=>{
+    remainingSeconds = Math.max(0, remainingSeconds - 1);
+    updateUI();
+    if (remainingSeconds <= 0){
+      triggerReminder();
+    }
+  }, 1000);
+}
+
+/* ======== UI updates ======== */
+function updateUI(){
+  statusText.textContent = reminderActive ? 'ON' : 'OFF';
+  intervalText.textContent = `Every ${intervalMinutes} minute${intervalMinutes>1?'s':''}`;
+  nextText.textContent = nextTrigger ? new Date(nextTrigger).toLocaleTimeString() : '—';
+  countdownEl.textContent = formatHMS(remainingSeconds);
+  const percent = (remainingSeconds / (intervalMinutes*60)) * 100;
+  waterEl.style.height = Math.max(4, percent) + '%';
+}
+
+/* ======== Start/Stop handlers ======== */
+intervalSelect.addEventListener('change', ()=> {
+  if (intervalSelect.value === 'custom'){
+    customMinutes.style.display = 'block';
+    customMinutes.focus();
+  } else {
+    customMinutes.style.display = 'none';
+  }
+});
+
+startBtn.addEventListener('click', async () => {
+  // determine minutes
+  if (intervalSelect.value === 'custom'){
+    const v = parseInt(customMinutes.value,10);
+    if (!v || v < 1){ showPopup('Enter valid minutes (min 1)'); return; }
+    intervalMinutes = v;
+  } else {
+    intervalMinutes = parseInt(intervalSelect.value, 10);
+  }
+
+  // register service worker (if not registered)
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('service-worker.js');
+      // keep controller active
+    } catch(e){
+      console.warn('SW register failed', e);
+    }
+  }
+
+  // Ask for notification permission
+  if ('Notification' in window && Notification.permission !== 'granted') {
+    try {
+      const p = await Notification.requestPermission();
+      if (p !== 'granted') showPopup('Notifications not granted — fallback will be used');
+    } catch(e){}
+  }
+
+  // Auto-attempt push subscription when starting (if SW ready)
+  try { primedAutoSubscribe(); } catch(e){ console.warn('auto-subscribe fail', e); }
+
+  remainingSeconds = intervalMinutes * 60;
+  nextTrigger = Date.now() + remainingSeconds*1000;
+  reminderActive = true;
+  startCountdown();
+  updateUI();
+
+  startBtn.disabled = true;
+  stopBtn.disabled = false;
+});
+
+stopBtn.addEventListener('click', () => {
+  reminderActive = false;
+  clearInterval(countdownTimer);
+  remainingSeconds = 0;
+  nextTrigger = null;
+  updateUI();
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+});
+
+/* ======== Push subscription flow ======== */
+/*
+  This page supports two ways to subscribe:
+  - Button 'Enable background notifications' (explicit)
+  - Automatic attempt when Start is clicked (primedAutoSubscribe)
+  When you subscribe, the client POSTs subscription JSON to server /subscribe (server listens on port 3000 by default).
+*/
+
+enablePushBtn.addEventListener('click', () => subscribeForPush());
+
+async function primedAutoSubscribe(){
+  // try to auto subscribe (only if SW available)
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  const reg = await navigator.serviceWorker.ready;
+  // check existing
+  const existing = await reg.pushManager.getSubscription();
+  if (existing) {
+    console.log('Already subscribed for push');
+    return;
+  }
+  // do not prompt user more than once automatically — show a friendly toast first
+  // We'll call subscribeForPush to run the flow
+  subscribeForPush();
+}
+
+async function subscribeForPush(){
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    showPopup('Push API not supported in this browser');
+    return;
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    // subscribe with VAPID public key
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    // send to your server
+    // change this URL if your server is on a different host/port
+    await fetch('http://127.0.0.1:3000/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub)
+    });
+    showPopup('Background notifications enabled');
+    console.log('Push subscription sent to server:', sub);
+  } catch (err) {
+    console.error('Failed to subscribe', err);
+    showPopup('Subscription failed — check console');
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+/* ======== Prime audio unlocking for mobile/desktop ======== */
+document.addEventListener('click', function initAudioOnce(){
+  alertAudio.volume = 0.0001;
+  alertAudio.play().then(()=> {
+    alertAudio.pause(); alertAudio.currentTime = 0; alertAudio.volume = 1.0;
+  }).catch(()=>{ /*ignore*/ });
+  document.removeEventListener('click', initAudioOnce);
+});
+
+/* ======== Register SW on load (graceful) ======== */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js').then(reg => {
+    console.log('SW registered at', reg.scope);
+  }).catch(err => console.warn('SW register failed', err));
+}
+
+updateUI();
+</script>
+</body>
+</html>
