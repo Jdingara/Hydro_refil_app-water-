@@ -1,0 +1,15 @@
+# Old PWA clone (its own git repo; lives on the main branch)
+Hydro_refil_app-water-/
+
+# Personal media - never commit
+water_reminder/photos/
+water_reminder/avatars/
+*.mp4
+*.mov
+*.jfif
+
+# Build output - shared via GitHub Releases instead
+water_reminder/dist/
+build/
+*.spec
+__pycache__/
