@@ -15,7 +15,8 @@ A Windows 10/11 (64-bit) app that pops up "Please drink water!" on a timer.
    The app now starts automatically with Windows.
 4. Optional: **🎬 Add video** to play your own video, with its sound, in the
    popup. **Remove video** goes back to the text-and-voice popup.
-5. **Stop** ends reminders and turns off start-with-Windows.
+5. The popup (and the video, looping) stays until you click **Done, I drank 💧**.
+6. **Stop** ends reminders and turns off start-with-Windows.
 
 | Button | Does |
 |---|---|
