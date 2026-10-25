@@ -248,9 +248,11 @@ class App:
             pic.pack(pady=(14, 4))
         tk.Label(p, text="💧 " + MESSAGE, font=("Segoe UI", 18, "bold"),
                  bg=BG, fg="white").pack(pady=(24 if not self.video else 0, 0))
+        def done():
+            ctypes.windll.winmm.mciSendStringW("close reminder", None, 0, None)
+            p.destroy()
         tk.Button(p, text="Done, I drank 💧", font=("Segoe UI", 11, "bold"), bg="#4dd0e1",
-                  relief="flat", command=p.destroy).pack(pady=12)
-        p.after(60_000, lambda: p.winfo_exists() and p.destroy())  # auto-close after 1 min
+                  relief="flat", command=done).pack(pady=12)
 
         if not self.video:
             speak(MESSAGE)
@@ -258,15 +260,14 @@ class App:
 
         frames, delay, wav = self.video
         tkframes = [ImageTk.PhotoImage(f) for f in frames]
-        if not (wav and play_wav(wav)):
-            speak(MESSAGE)
 
         def animate(i=0):
             if p.winfo_exists():
+                if i == 0 and not (wav and play_wav(wav)):  # restart the voice each loop
+                    speak(MESSAGE)
                 pic.config(image=tkframes[i])
                 pic.image = tkframes  # keep references alive
-                if i < len(tkframes) - 1:  # play once, stay on last frame
-                    p.after(delay, animate, i + 1)
+                p.after(delay, animate, (i + 1) % len(tkframes))  # loop until Done
         animate()
 
 

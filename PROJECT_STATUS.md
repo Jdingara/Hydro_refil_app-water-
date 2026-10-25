@@ -16,9 +16,10 @@ Do not change these without asking the user first.
   Don't add features (stats, tracking, accounts) unprompted.
 - **Desktop app, not web.** Python + tkinter, packaged with PyInstaller into a
   folder exe. A browser/PWA was rejected: background-tab popups are unreliable.
-- **Popup modes:** a user-added video plays once with its own sound, then holds
-  on the last frame. With no video, show a text-only popup and speak the message
-  with the Windows female TTS voice (slow rate, "kind" voice).
+- **Popup modes:** a user-added video loops with its own sound until the user
+  clicks "Done, I drank 💧". There is no auto-close. With no video, show a
+  text-only popup and speak the message once with the Windows female TTS voice
+  (slow rate, "kind" voice).
 - **Generic message text:** "Please drink water!" (no name) so the shared exe
   works for anyone. Sasi's personal video says "Sasi" in its own audio.
 - **Video is chosen in the app** (🎬 Add video / Remove video), not by dropping
@@ -84,8 +85,9 @@ with a 30-minute interval, autostart registered, and their video installed in
 4.1 s of WAV audio. The extracted voice played aloud, and the user confirmed
 hearing the TTS. The exe launches; `--autostart` starts minimized, resumes the
 saved interval, and writes the Run key. `set_autostart(30/None)` round-trips.
-**Not verified:** the popup and video playback inside the *exe* (only checked
-from source); a real reboot; any machine other than Sasi's.
+The user screenshotted the video popup working in the exe. **Not verified:**
+the new looping behaviour (built and launched, not yet seen looping); a real
+reboot; any machine other than Sasi's.
 
 **How it got here (and why):**
 - The old repo was a browser PWA that depended on a missing push server at
@@ -106,6 +108,11 @@ from source); a real reboot; any machine other than Sasi's.
 - The message changed from "Drink water, please!" to "Please drink water, Sasi."
   and then to generic "Please drink water!" for sharing.
 - A temporary "1 min" interval button was added for testing and is still there.
+- The video originally played once, held on the last frame, and auto-closed
+  after 1 minute. The user saw it in the exe (so exe popup and video playback
+  are confirmed working) and asked for it to repeat until Done is clicked. Now
+  frames loop, the WAV restarts at frame 0, and Done closes the audio. The
+  auto-close was removed for both modes.
 - **Git:** `water intake/` is now a git repo whose remote is
   `Jdingara/Hydro_refil_app-water-`, on an orphan branch `desktop-app` (pushed).
   `main` still holds the old PWA. Personal media (`photos/`, `avatars/`,
