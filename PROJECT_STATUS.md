@@ -106,6 +106,11 @@ from source); a real reboot; any machine other than Sasi's.
 - The message changed from "Drink water, please!" to "Please drink water, Sasi."
   and then to generic "Please drink water!" for sharing.
 - A temporary "1 min" interval button was added for testing and is still there.
+- **Git:** `water intake/` is now a git repo whose remote is
+  `Jdingara/Hydro_refil_app-water-`, on an orphan branch `desktop-app` (pushed).
+  `main` still holds the old PWA. Personal media (`photos/`, `avatars/`,
+  `*.mp4`, `*.jfif`), `dist/` and the nested PWA clone are git-ignored. Pushing
+  works through Git Credential Manager even though `gh` isn't logged in.
 
 ## Open Decisions
 
@@ -119,8 +124,11 @@ from source); a real reboot; any machine other than Sasi's.
   not requested).
 - Should ✕ minimize instead of quitting, so reminders don't stop for the session?
 - 32-bit build: install 32-bit Python and rebuild only if a recipient needs it.
-- Move the project into git? `water intake/` isn't a repo yet; only the old
-  clone is.
+- Publish `dist/Water Reminder.zip` as a GitHub Release on the `desktop-app`
+  branch. Blocked: `gh` isn't logged in (`gh auth login`). Upload it through the
+  GitHub website, or log in to `gh` first.
+- Merge `desktop-app` into `main`? The branch is an orphan (no shared history
+  with the PWA on `main`), so it's kept separate for now.
 
 ## Repo Structure
 
