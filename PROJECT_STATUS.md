@@ -68,12 +68,12 @@ Do not change these without asking the user first.
 | 2 | Avatars: drawn cartoon → photos → slideshow GIF | Done, then superseded |
 | 3 | Video popup with its own audio (PyAV) | Done |
 | 4 | In-app Add/Remove video; text-only fallback | Done |
-| 5 | PyInstaller exe + shareable zip | Done |
+| 5 | PyInstaller exe + shareable zip (GitHub Release) | Done |
 | 6 | Autostart with Windows until Stop | Done (simulated, not real reboot) |
 | 7 | Verify on another laptop / real reboot | Not started |
 | 8 | 32-bit build | Deferred (only if a user needs it) |
 
-## Current Status (last updated: 2026-10-25)
+## Current Status (last updated: 2026-10-26)
 
 **Built:** `water_reminder/water_reminder.py` is the app. The exe is in
 `water_reminder/dist/Water Reminder/` and the shareable copy is
@@ -85,9 +85,11 @@ with a 30-minute interval, autostart registered, and their video installed in
 4.1 s of WAV audio. The extracted voice played aloud, and the user confirmed
 hearing the TTS. The exe launches; `--autostart` starts minimized, resumes the
 saved interval, and writes the Run key. `set_autostart(30/None)` round-trips.
-The user screenshotted the video popup working in the exe. **Not verified:**
-the new looping behaviour (built and launched, not yet seen looping); a real
-reboot; any machine other than Sasi's.
+The user screenshotted the video popup working in the exe. On 2026-10-26 the
+user reported that the looping video works and that they uploaded the zip as a
+GitHub Release. The assistant couldn't independently confirm the release: the
+public API returns 404, so the repo is likely private and `gh` isn't logged in.
+**Not verified:** a real reboot; any machine other than Sasi's.
 
 **How it got here (and why):**
 - The old repo was a browser PWA that depended on a missing push server at
@@ -131,9 +133,10 @@ reboot; any machine other than Sasi's.
   not requested).
 - Should ✕ minimize instead of quitting, so reminders don't stop for the session?
 - 32-bit build: install 32-bit Python and rebuild only if a recipient needs it.
-- Publish `dist/Water Reminder.zip` as a GitHub Release on the `desktop-app`
-  branch. Blocked: `gh` isn't logged in (`gh auth login`). Upload it through the
-  GitHub website, or log in to `gh` first.
+- The repo appears to be private, so friends can't download the Release unless
+  it's made public or they're added as collaborators. Decide which.
+- After any rebuild, re-upload the zip to the Release by hand (`gh` isn't logged
+  in, so the assistant can't do it).
 - Merge `desktop-app` into `main`? The branch is an orphan (no shared history
   with the PWA on `main`), so it's kept separate for now.
 
