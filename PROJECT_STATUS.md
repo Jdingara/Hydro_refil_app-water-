@@ -68,7 +68,7 @@ Do not change these without asking the user first.
 | 2 | Avatars: drawn cartoon → photos → slideshow GIF | Done, then superseded |
 | 3 | Video popup with its own audio (PyAV) | Done |
 | 4 | In-app Add/Remove video; text-only fallback | Done |
-| 5 | PyInstaller exe + shareable zip | Done (GitHub Release pending) |
+| 5 | PyInstaller exe + shareable zip (GitHub Release v1.0) | Done |
 | 6 | Autostart with Windows until Stop | Done (simulated, not real reboot) |
 | 7 | Verify on another laptop / real reboot | Not started |
 | 8 | 32-bit build | Deferred (only if a user needs it) |
@@ -86,10 +86,14 @@ with a 30-minute interval, autostart registered, and their video installed in
 hearing the TTS. The exe launches; `--autostart` starts minimized, resumes the
 saved interval, and writes the Run key. `set_autostart(30/None)` round-trips.
 The user screenshotted the video popup working in the exe. On 2026-10-26 the
-user reported that the looping video works. They also believed they had
-uploaded the zip as a GitHub Release, but the API shows the repo is **public**
-and has **no releases or tags**, so the Release is still pending. (An earlier
-API 404 was briefly misread as "repo is private".)
+user reported that the looping video works. The repo is **public**. GitHub Release
+**v1.0** is published (tag on `desktop-app` @ de249e7) with asset
+`Water.Reminder.zip` (GitHub renamed the space to a dot). Its SHA-256 `722d1a5e…`
+matches the local `dist/Water Reminder.zip`. Download link:
+https://github.com/Jdingara/Hydro_refil_app-water-/releases/download/v1.0/Water.Reminder.zip
+Gotcha: the user's first attempt was left as a **draft** (URL
+`releases/edit/untagged-…`). Drafts are invisible to the public API, which
+returns an empty list or 404, until "Publish release" is clicked.
 **Not verified:** a real reboot; any machine other than Sasi's.
 
 **How it got here (and why):**
@@ -134,11 +138,8 @@ API 404 was briefly misread as "repo is private".)
   not requested).
 - Should ✕ minimize instead of quitting, so reminders don't stop for the session?
 - 32-bit build: install 32-bit Python and rebuild only if a recipient needs it.
-- GitHub Release `v1.0` (target `desktop-app`, asset `Water Reminder.zip`) is
-  not created yet. The user is uploading it through the website. Verify with
-  `curl https://api.github.com/repos/Jdingara/Hydro_refil_app-water-/releases`.
-- After any rebuild, re-upload the zip to the Release by hand (`gh` isn't logged
-  in, so the assistant can't do it).
+- After any rebuild, publish a new Release (e.g. v1.1) with the new zip, by hand
+  through the website (`gh` isn't logged in, so the assistant can't do it).
 - Merge `desktop-app` into `main`? The branch is an orphan (no shared history
   with the PWA on `main`), so it's kept separate for now.
 

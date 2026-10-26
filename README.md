@@ -7,8 +7,9 @@ A Windows 10/11 (64-bit) app that pops up "Please drink water!" on a timer.
 
 ## Use the app (no install)
 
-1. Unzip `water_reminder/dist/Water Reminder.zip` somewhere permanent
-   (e.g. Documents).
+1. Download
+   [Water.Reminder.zip](https://github.com/Jdingara/Hydro_refil_app-water-/releases/download/v1.0/Water.Reminder.zip)
+   (or build it, see below) and unzip it somewhere permanent (e.g. Documents).
 2. Double-click `Water Reminder.exe`. If Windows says "Windows protected your
    PC", click **More info → Run anyway**.
 3. Click an interval: **1 min**, **15 min**, **30 min** or **1 hour**.
