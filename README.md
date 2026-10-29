@@ -28,6 +28,14 @@ A Windows 10/11 (64-bit) app that pops up "Please drink water!" on a timer.
 
 Settings and the video are stored in `%APPDATA%\WaterReminder`.
 
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| App didn't open after restart | Ctrl+Shift+Esc → **Startup apps** → set **Water Reminder** to **Enabled**. Cleanup tools sometimes disable it. |
+| Can't find the app in Windows search | The zip has no installer, so there's no Start menu entry. Right-click `Water Reminder.exe` → **Show more options → Pin to Start**, or **Send to → Desktop (create shortcut)**. |
+| App was closed | Open `Water Reminder.exe` again; it resumes your saved interval. |
+
 ## Run from source
 
 Requires Python 3.14 (64-bit) via the `py` launcher.
