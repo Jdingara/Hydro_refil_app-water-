@@ -82,6 +82,10 @@ Do not change these without asking the user first.
 **2026-10-29:** the app didn't open after a reboot. The Run key and settings were
 fine, but Windows had the entry marked Disabled in StartupApproved. It was
 re-enabled and the app was relaunched. Not yet confirmed across a real reboot.
+The user also couldn't find the app in Windows search, because a portable exe
+has no Start menu entry. "Drink Water Reminder.lnk" shortcuts were created by
+hand in the user's Start Menu\Programs and on the Desktop (Sasi's laptop only;
+the shared zip doesn't do this).
 
 **Built:** `water_reminder/water_reminder.py` is the app. The exe is in
 `water_reminder/dist/Water Reminder/` and the shareable copy is
@@ -138,6 +142,8 @@ returns an empty list or 404, until "Publish release" is clicked.
 
 - Should picking an interval also clear the StartupApproved "disabled" flag?
   That would be more robust, but it overrides a user's Task Manager choice; ask first.
+- Should the app create its own Start menu shortcut on first run, so friends can
+  find it in Windows search? That needs a rebuild and a new Release (v1.1).
 - Keep or remove the "1 min" test button before wider sharing?
 - Clean up legacy files (`avatars/`, `sounds/`, `photos/`, `make_*.py`,
   `saree_lady_cartoon.gif`, `Start Water Reminder.bat`)? This needs the user's
