@@ -54,6 +54,10 @@ Do not change these without asking the user first.
 - Autostart command differs when frozen: `sys.executable --autostart` for the
   exe, and `pythonw.exe <script> --autostart` from source. If the exe folder is
   moved, the Run entry goes stale until an interval is picked again.
+- Windows can silently block autostart even when the Run key is correct:
+  `HKCU\...\Explorer\StartupApproved\Run\WaterReminder` first byte `03` means
+  disabled (Task Manager → Startup apps, or a cleanup tool), and `02` means
+  enabled. Seen on 2026-10-29; re-enabled by writing `02 00…`.
 - The first popup after launch decodes the whole video (~1 s for 4 s at 30 fps);
   later popups reuse the cached frames in `App.video`.
 - Wikimedia Commons API (`generator=search`, `prop=imageinfo`) is a quick
@@ -73,7 +77,11 @@ Do not change these without asking the user first.
 | 7 | Verify on another laptop / real reboot | Not started |
 | 8 | 32-bit build | Deferred (only if a user needs it) |
 
-## Current Status (last updated: 2026-10-26)
+## Current Status (last updated: 2026-10-29)
+
+**2026-10-29:** the app didn't open after a reboot. The Run key and settings were
+fine, but Windows had the entry marked Disabled in StartupApproved. It was
+re-enabled and the app was relaunched. Not yet confirmed across a real reboot.
 
 **Built:** `water_reminder/water_reminder.py` is the app. The exe is in
 `water_reminder/dist/Water Reminder/` and the shareable copy is
@@ -128,6 +136,8 @@ returns an empty list or 404, until "Publish release" is clicked.
 
 ## Open Decisions
 
+- Should picking an interval also clear the StartupApproved "disabled" flag?
+  That would be more robust, but it overrides a user's Task Manager choice; ask first.
 - Keep or remove the "1 min" test button before wider sharing?
 - Clean up legacy files (`avatars/`, `sounds/`, `photos/`, `make_*.py`,
   `saree_lady_cartoon.gif`, `Start Water Reminder.bat`)? This needs the user's
