@@ -17,7 +17,8 @@ Do not change these without asking the user first.
 - **Desktop app, not web.** Python + tkinter, packaged with PyInstaller into a
   folder exe. A browser/PWA was rejected: background-tab popups are unreliable.
 - **Popup modes:** a user-added video loops with its own sound until the user
-  clicks "Done, I drank 💧". There is no auto-close. With no video, show a
+  clicks "Done, I drank 💧", or for at most **1 minute**, after which the popup
+  closes and the sound stops by itself (user-confirmed 2026-11-13). With no video, show a
   text-only popup and speak the message once with the Windows female TTS voice
   (slow rate, "kind" voice).
 - **Generic message text:** "Please drink water!" (no name) so the shared exe
@@ -77,7 +78,18 @@ Do not change these without asking the user first.
 | 7 | Verify on another laptop / real reboot | Not started |
 | 8 | 32-bit build | Deferred (only if a user needs it) |
 
-## Current Status (last updated: 2026-10-29)
+## Current Status (last updated: 2026-11-13)
+
+**2026-11-13:** the user found the looping video talking for the whole 30
+minutes when they were away from the laptop. They said they had fixed this on
+their other laptop, but no such commit or release was on GitHub (latest commit
+was 2026-10-29). So it was re-done here: `p.after(60_000, done)` closes the
+popup and the MCI audio after 1 minute; `done()` is guarded with
+`winfo_exists()` so a stale timer can't touch a newer popup. Tested with a
+3-second copy (popup open at 1 s, gone by 5 s). The exe was rebuilt, re-zipped
+and relaunched. **If the other laptop has its own unpushed version of this
+fix, discard it and pull** to avoid a conflict. Release v1.1 with the new zip
+still has to be published by hand.
 
 **2026-10-29:** the app didn't open after a reboot. The Run key and settings were
 fine, but Windows had the entry marked Disabled in StartupApproved. It was
@@ -140,6 +152,9 @@ returns an empty list or 404, until "Publish release" is clicked.
 
 ## Open Decisions
 
+- Publish GitHub Release **v1.1** (target `desktop-app`, asset
+  `dist/Water Reminder.zip`) with the 1-minute auto-stop. Until then v1.0 loops
+  until Done.
 - Should picking an interval also clear the StartupApproved "disabled" flag?
   That would be more robust, but it overrides a user's Task Manager choice; ask first.
 - Should the app create its own Start menu shortcut on first run, so friends can

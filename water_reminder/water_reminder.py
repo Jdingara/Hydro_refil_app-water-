@@ -249,10 +249,12 @@ class App:
         tk.Label(p, text="💧 " + MESSAGE, font=("Segoe UI", 18, "bold"),
                  bg=BG, fg="white").pack(pady=(24 if not self.video else 0, 0))
         def done():
-            ctypes.windll.winmm.mciSendStringW("close reminder", None, 0, None)
-            p.destroy()
+            if p.winfo_exists():
+                ctypes.windll.winmm.mciSendStringW("close reminder", None, 0, None)
+                p.destroy()
         tk.Button(p, text="Done, I drank 💧", font=("Segoe UI", 11, "bold"), bg="#4dd0e1",
                   relief="flat", command=done).pack(pady=12)
+        p.after(60_000, done)  # nobody clicked: stop the video/voice after 1 minute
 
         if not self.video:
             speak(MESSAGE)
