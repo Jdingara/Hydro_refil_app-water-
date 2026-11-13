@@ -91,6 +91,20 @@ and relaunched. **If the other laptop has its own unpushed version of this
 fix, discard it and pull** to avoid a conflict. Release v1.1 with the new zip
 still has to be published by hand.
 
+Later the same day the user asked the assistant to choose among the optional
+extras, and two were done. (1) The "1 min" test button was removed; intervals
+are now 15/30/60. (2) On every exe launch, `add_start_menu_shortcut()` writes
+`%APPDATA%\...\Start Menu\Programs\Drink Water Reminder.lnk` through a hidden
+PowerShell call (WScript.Shell). It refreshes every launch, so a moved exe
+fixes itself; paths are passed via env vars to avoid quoting issues. Verified:
+the link was removed, the exe launched, and the link reappeared after about 2 s
+with the correct target. The first cold start after a rebuild took more than
+8 s, so wait longer when testing. Rejected: "✕ minimizes" (there would be no
+easy way to quit) and legacy-file cleanup (low value; it sits next to personal
+media). The zip was rebuilt with both changes, so v1.1 = auto-stop + no 1-min
+button + Start menu shortcut. The other laptop: the user will
+`git checkout -- .` and `git pull`.
+
 **2026-10-29:** the app didn't open after a reboot. The Run key and settings were
 fine, but Windows had the entry marked Disabled in StartupApproved. It was
 re-enabled and the app was relaunched. Not yet confirmed across a real reboot.
@@ -138,7 +152,7 @@ returns an empty list or 404, until "Publish release" is clicked.
   self-explanatory. Those folders and the helper scripts are now legacy.
 - The message changed from "Drink water, please!" to "Please drink water, Sasi."
   and then to generic "Please drink water!" for sharing.
-- A temporary "1 min" interval button was added for testing and is still there.
+- A temporary "1 min" interval button was added for testing (removed 2026-11-13).
 - The video originally played once, held on the last frame, and auto-closed
   after 1 minute. The user saw it in the exe (so exe popup and video playback
   are confirmed working) and asked for it to repeat until Done is clicked. Now
@@ -153,13 +167,11 @@ returns an empty list or 404, until "Publish release" is clicked.
 ## Open Decisions
 
 - Publish GitHub Release **v1.1** (target `desktop-app`, asset
-  `dist/Water Reminder.zip`) with the 1-minute auto-stop. Until then v1.0 loops
-  until Done.
+  `dist/Water Reminder.zip` built 2026-11-13 *after* the Start-menu change).
+  The user is doing it; verify the asset is the newest zip (compare SHA-256).
+  Until then v1.0 loops until Done.
 - Should picking an interval also clear the StartupApproved "disabled" flag?
   That would be more robust, but it overrides a user's Task Manager choice; ask first.
-- Should the app create its own Start menu shortcut on first run, so friends can
-  find it in Windows search? That needs a rebuild and a new Release (v1.1).
-- Keep or remove the "1 min" test button before wider sharing?
 - Clean up legacy files (`avatars/`, `sounds/`, `photos/`, `make_*.py`,
   `saree_lady_cartoon.gif`, `Start Water Reminder.bat`)? This needs the user's
   OK because `photos/` holds their personal images.
@@ -167,7 +179,6 @@ returns an empty list or 404, until "Publish release" is clicked.
   not yet chosen).
 - Code signing to avoid the "Windows protected your PC" warning (costs money;
   not requested).
-- Should ✕ minimize instead of quitting, so reminders don't stop for the session?
 - 32-bit build: install 32-bit Python and rebuild only if a recipient needs it.
 - After any rebuild, publish a new Release (e.g. v1.1) with the new zip, by hand
   through the website (`gh` isn't logged in, so the assistant can't do it).

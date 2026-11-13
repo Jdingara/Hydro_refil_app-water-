@@ -64,6 +64,20 @@ def saved_video():
     return None
 
 
+def add_start_menu_shortcut():
+    """Put the exe in the Start menu so Windows search finds it (exe only; refreshes a moved path)."""
+    if not getattr(sys, "frozen", False):
+        return
+    lnk = os.path.join(os.environ.get("APPDATA", ""), r"Microsoft\Windows\Start Menu\Programs",
+                       "Drink Water Reminder.lnk")
+    exe = sys.executable
+    cmd = ("$s = (New-Object -ComObject WScript.Shell).CreateShortcut($env:WR_LNK); "
+           "$s.TargetPath = $env:WR_EXE; $s.WorkingDirectory = Split-Path $env:WR_EXE; $s.Save()")
+    subprocess.Popen(["powershell", "-NoProfile", "-Command", cmd],
+                     env={**os.environ, "WR_LNK": lnk, "WR_EXE": exe},
+                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+
+
 def speak(text):
     # Windows built-in text-to-speech; runs in background so the UI never freezes
     cmd = ("Add-Type -AssemblyName System.Speech; "
@@ -128,8 +142,8 @@ class App:
 
         row = tk.Frame(root, bg="#024a72")
         row.pack(pady=10)
-        for label, minutes in (("1 min", 1), ("15 min", 15), ("30 min", 30), ("1 hour", 60)):
-            tk.Button(row, text=label, width=6, font=("Segoe UI", 11, "bold"),
+        for label, minutes in (("15 min", 15), ("30 min", 30), ("1 hour", 60)):
+            tk.Button(row, text=label, width=8, font=("Segoe UI", 11, "bold"),
                       bg="#4dd0e1", relief="flat",
                       command=lambda m=minutes: self.start(m)).pack(side="left", padx=5)
 
@@ -154,6 +168,7 @@ class App:
 
         self.refresh_video_label()
         self.tick()
+        add_start_menu_shortcut()
 
         minutes = saved_minutes()
         if minutes:  # was running before the restart: carry on

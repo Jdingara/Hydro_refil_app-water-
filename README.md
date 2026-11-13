@@ -12,7 +12,7 @@ A Windows 10/11 (64-bit) app that pops up "Please drink water!" on a timer.
    (or build it, see below) and unzip it somewhere permanent (e.g. Documents).
 2. Double-click `Water Reminder.exe`. If Windows says "Windows protected your
    PC", click **More info → Run anyway**.
-3. Click an interval: **1 min**, **15 min**, **30 min** or **1 hour**.
+3. Click an interval: **15 min**, **30 min** or **1 hour**.
    The app now starts automatically with Windows.
 4. Optional: **🎬 Add video** to play your own video, with its sound, in the
    popup. **Remove video** goes back to the text-and-voice popup.
@@ -34,7 +34,7 @@ Settings and the video are stored in `%APPDATA%\WaterReminder`.
 | Problem | Fix |
 |---|---|
 | App didn't open after restart | Ctrl+Shift+Esc → **Startup apps** → set **Water Reminder** to **Enabled**. Cleanup tools sometimes disable it. |
-| Can't find the app in Windows search | The zip has no installer, so there's no Start menu entry. Right-click `Water Reminder.exe` → **Pin to Start** (on Windows 10/11 it's in the right-click menu), or create a desktop shortcut via **Send to → Desktop (create shortcut)**. |
+| Can't find the app in Windows search | From v1.1 the app adds "Drink Water Reminder" to the Start menu the first time it opens; search may take a minute to pick it up. On v1.0, right-click `Water Reminder.exe` → **Pin to Start**. |
 | App was closed | Open `Water Reminder.exe` again; it resumes your saved interval. |
 
 ## Run from source
